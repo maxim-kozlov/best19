@@ -29,5 +29,5 @@
 
 
 # Запуск:
-Перейдите в директорию проекта
-Выполните команду `python ProjectileFlightSimulation.py`
+- Перейдите в директорию проекта
+- Выполните команду `python ProjectileFlightSimulation.py`
