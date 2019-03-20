@@ -212,15 +212,27 @@ def write_files(filename, list1, list2, list3, time):
 # блок настройки
 delta_t = 0.01
 a = 0  # math.pi / 2
-# Диман пофикси порядок в соответствии с отчётом
+incorect = True
+while incorect:
+    try:
+        H = float(input("введите H0: "))
+        V0 = float(input("введите V0: "))
+        m = float(input("введите m:  "))
 
-V0 = float(input("введите V0: "))
+        print("введите координаты цели в одну строчку через пробел")
+        x_target, y_target, z_target = map(float, input().split())
 
-H = float(input("введите H0: "))
-m = float(input("введите m:  "))
+        if not (0 <= H <= 1400) or not (-250 <= V0 <= 250):
+            print("too much value\n")
+        elif m <= 0:
+            print("масса должна быть положительной")
+        else:    
+            incorect = False
+    except Exception as e:
+        print("Incorrect value")
+        print(e)
 
-print("введите координаты цели в одну строчку через пробел")
-x_target, y_target, z_target = map(float, input().split())
+
 # -------------
 
 # ускорение свободного падения
