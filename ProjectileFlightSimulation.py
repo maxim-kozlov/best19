@@ -160,27 +160,39 @@ def projectile(k, x_0, y_0, z_0, z_target):
     return x, y, z, vx, vy, vz, t
 
 
-def visualization(x, y, z, t):
+def visualization(x, y, z, vx, vy, vz, t):
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
 
     # определяем графики проекций движения
-    axe_x = plt.subplot(311)
-    axe_y = plt.subplot(312, sharex=axe_x)
-    axe_z = plt.subplot(313, sharex=axe_x)
+    axe_x = plt.subplot(321)
+    axe_y = plt.subplot(323, sharex=axe_x)
+    axe_z = plt.subplot(325, sharex=axe_x)
 
+    axe_vx = plt.subplot(322)
+    axe_vy = plt.subplot(324, sharex=axe_vx)
+    axe_vz = plt.subplot(326, sharex=axe_vx)
+    
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     # ax.axis('equal')
 
-    axe_x.plot(t, x, label="x(t)")
-    axe_y.plot(t, y, label="y(t)")
-    axe_z.plot(t, z, label="z(t)")
+    axe_x.plot(t, x, color="red", label="x(t)")
+    axe_y.plot(t, y, color="green", label="y(t)")
+    axe_z.plot(t, z, color="blue", label="z(t)")
 
+    axe_vx.plot(t, vx, color="red", label="Vx(t)")
+    axe_vy.plot(t, vy, color="green", label="Vy(t)")
+    axe_vz.plot(t, vz, color="blue", label="Vz(t)")
+    
     axe_x.legend()
     axe_y.legend()
     axe_z.legend()
 
+    axe_vx.legend()
+    axe_vy.legend()
+    axe_vz.legend()
+    
     coor = zip(x, y, z)
     x_t, y_t, z_t = next(coor)
     for x1, y1, z1 in coor:
@@ -188,6 +200,7 @@ def visualization(x, y, z, t):
                   y_t, z1-z_t, arrow_length_ratio=0)
         x_t, y_t, z_t = x1, y1, z1
     plt.show()
+
 
 
 def write_files(filename, list1, list2, list3, time):
@@ -266,4 +279,4 @@ write_files("V.txt", vx, vy, vz, t)
 print("Визуализировать траекторию точки? (y/n)")
 vis = input().lower()
 if 'y' in vis:
-    visualization(x, y, z, t)
+    visualization(x, y, z, vx, vy, vz, t)
