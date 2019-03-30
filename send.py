@@ -57,12 +57,12 @@ class we:
 
         return message
 
-    def parce(self, message):
+    def parce(self, message, sep = '>'):
         """ Cleans data from unnessasary things """
 
         firstBrace = message.index("{")
         message = message[firstBrace:]
 
-        message1, message2 = message.split(">")
+        message1, message2 = message.split(sep)
 
         return self.takeText(message1), self.takeText(message2)
