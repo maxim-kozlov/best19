@@ -1,4 +1,5 @@
 import socket
+import struct
 HOST = "besthack19.sytes.net"
 PORT = 4242
 COMMAND = "11wake4pneo17io"
@@ -7,7 +8,6 @@ COMMAND = "11wake4pneo17io"
 class we:
 
     def __init__(self, host=HOST, port=PORT, command=COMMAND):
-        import socket
 
         self.host = host
         self.port = port
@@ -16,12 +16,17 @@ class we:
         self.sock.connect((self.host, self.port))
 
 
-    def __getBytes(self, string: str) -> bytes:
-        return (len(string)).to_bytes(4, byteorder='little')
+    def __getBytes(self, string: str, w=True) -> bytes:
+        if w:
+            return struct.pack('<L', len(string))
+            # return (len(string)).to_bytes(4, byteorder='little')
+        else:
+            return (len(string)).to_bytes(4, byteorder='little')
 
-    def __createRequest(self, **kwargs) -> bytes:
+    def __createRequest(self, w=True, **kwargs) -> bytes:
         import json
-        return self.__getBytes(str(kwargs)) + json.dumps(kwargs).encode()
+        # str(kwargs)
+        return self.__getBytes(str(kwargs), w) + json.dumps(kwargs).encode()
 
     def takeText(self, string, parts=("{", "}")):
         return string[string.index(parts[0]) + 1: string.index(parts[1])]
@@ -38,10 +43,11 @@ class we:
             SOCKET: {self.sock}
             """)
 
-    def getData(self, debug=False, **kwargs) -> str:
+    def getData(self, debug=False, w=True, **kwargs) -> str:
         message = ""
 
-        data = self.__createRequest(**kwargs)
+        data = self.__createRequest(w=w, **kwargs)
+        # print(data)
         self.sock.send(data)
 
         while True:

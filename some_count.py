@@ -1,37 +1,9 @@
-import math as m
-from scipy import interpolate
-from random import uniform, randint
-
-from send import *
-import numpy as np
 import json
-
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
-
-we = we()
-
-data = we.getData(w=False, team=COMMAND, task=1)
-map_, data = we.parce(data) # '='
-we.takeText(map_, ("[", "]"))
-MAP = np.fromstring(we.takeText(map_, ("[", "]")), dtype=int, sep=",")
-
-data += '}'
-data = json.loads('{' + data + '}')
-data = data['data']
-N = int(len(MAP)**(1/2))
-
-MAP.resize((N, N))
-
-'''
-from mayavi import mlab
-
-mlab.surf(MAP) 
-
-mlab.show()
-'''
+import struct
+import math as m
+import numpy
+import copy
+from server_work import Courier
 
 def getMinEps(maybe):
     best_x, best_y, best_eps = maybe[0][0], maybe[0][1], maybe[0][2]
@@ -44,23 +16,47 @@ def getMinEps(maybe):
     return best_x, best_y
 
 
+def getData(x, y, ready = 1):
+    # print(x, y)
+    server.send_data(
+    json.dumps({"ready": ready, "x": round(x), "y": round(y)}))
+
+    a = server.get_next_json()
+    # print(a)
+    if not ('scores' in a or 'error' in a):
+        return a["data"]
+    else:
+        return a
+
+server = Courier()
+
+MAP = server.get_next_json()["map"]
+
+N = int(m.sqrt(len(MAP)))
+MAP = numpy.array(MAP).reshape((N, N))
+print("map: ", MAP)
+
+
 def getNextMaybe(maybe, initdata, last_psi, last_x, last_y):
     temp = []
 
     speed = initdata['speed']
     if speed > 0:
-        sx = round(speed * m.cos(last_psi), 2)
-        sy = round(speed * m.sin(last_psi), 2)
+        sx = round(2*speed * m.cos(last_psi), 2)
+        sy = round(2*speed * m.sin(last_psi), 2)
     else:
-        sx = round(1 * m.cos(last_psi), 2)
-        sy = round(1 * m.sin(last_psi), 2)
+        sx = round(2 * m.cos(last_psi), 2)
+        sy = round(2 * m.sin(last_psi), 2)
 
     the_best_eps = m.inf
     the_best_x = last_x + sx
     the_best_y = last_y + sy
     
+    if (0 <= the_best_x <= n and 0 <= the_best_y <= n):
+        maybe.append((N//2, N//2, m.inf))
+    else:
+        maybe.append((the_best_x, the_best_y, sx))
 
-    maybe.append((the_best_x, the_best_y, m.inf))
     for t in maybe:
         x, y, _ = t
 
@@ -101,21 +97,9 @@ def getNextMaybe(maybe, initdata, last_psi, last_x, last_y):
     if not temp:
         temp.append((the_best_x, the_best_y, the_best_eps))
 
-    return temp, the_best_x, the_best_y
+    return list(set(temp)), the_best_x, the_best_y
 
 
-def getData(x, y, ready = 1):
-    # print(x, y)
-    a = we.getData( ready=ready, x=x, y=y)
-    i = 0
-    while a[i] != '{':
-        i += 1
-    a = a[i:]
-    # print(a)
-    if not ('scores' in a or 'error' in a):
-        return json.loads(a)['data']
-    else:
-        return json.loads(a)
 
 def f(x, y):
     x = round(x)
@@ -125,7 +109,8 @@ def f(x, y):
 # f = interpolate.interp2d(x, y, MAP, bounds_error=True)
 n = N - 1
 # eps = 100
-'''
+
+data = server.get_next_json()['data']
 best_x, best_y, best_eps = 0, 0, m.inf
 maybe = []
 for x in range(N):
@@ -146,21 +131,21 @@ last_psi = m.pi * data['psi'] / 180
 x, y = getMinEps(maybe)
 
 initdata = getData(x, y)
-'''
-x, y = N/2, N/2
-initdata = getData(x, y)
-
 while not ('scores' in initdata or 'error' in initdata):
-    initdata = getData(N/2, N/2)
-
+    # initdata = getData(N/2, N/2)
     '''
+    server.send_data(json.dumps({"ready": 1, "x": N//2, "y": N//2}))
+    initdata = server.get_next_json()
+    '''
+    
     maybe, x, y = getNextMaybe(maybe, initdata, last_psi, x, y)
     last_psi = m.pi * initdata['psi'] / 180
 
-    initdata = getData(x, y)
-    '''
+    initdata = getData(y, x)
+    
 
 if 'scores' in initdata:
     print(initdata['scores'])
 else:
     print(initdata['error'])
+    
